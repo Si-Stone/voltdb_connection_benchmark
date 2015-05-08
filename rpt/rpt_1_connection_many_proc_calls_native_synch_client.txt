@@ -1,0 +1,66 @@
+
+truncate table client_location;
+(Returned 100000 rows in 0.01s)
+--------------------------------------------------------------------------------
+ Command Line Configuration
+--------------------------------------------------------------------------------
+
+clientType = native_synch_client
+numberOfConnections = 1
+numberOfProcCallsPerConnection = 100000
+password = 
+server = localhost:21212
+user = 
+
+
+--------------------------------------------------------------------------------
+ Benchmark Starts
+--------------------------------------------------------------------------------
+
+
+--------------------------------------------------------------------------------
+ Benchmark Ends
+--------------------------------------------------------------------------------
+
+Total run time (HH:MI:SS) was: 00:00:28
+
+--------------------------------------------------------------------------------
+
+
+Total number of procedure calls was: 100000
+Total number of successes was      : 100000
+Total number of failures was       : 0
+
+--------------------------------------------------------------------------------
+
+
+Total comparison time in milliseconds was          : 27664
+Connect comparison time in milliseconds was        : 338
+Procedure call comparison time in milliseconds was : 27323
+Disconnect comparison time in milliseconds was     : 3
+
+--------------------------------------------------------------------------------
+
+
+Total comparison time per connection in milliseconds was         : 0
+Connect comparison time per connection in milliseconds was       : 0
+Procedure call comparison time per connection in milliseconds was: 0
+Disconnect comparison time per connection in milliseconds was    : 0
+
+--------------------------------------------------------------------------------
+
+
+Percentage of time spent connecting   :         1
+Percentage of time spent in proc call :        99
+Percentage of time spent disconnecting:         0
+
+--------------------------------------------------------------------------------
+
+
+
+select count(*) from client_location;
+C1     
+-------
+ 100000
+
+(Returned 1 rows in 0.03s)
