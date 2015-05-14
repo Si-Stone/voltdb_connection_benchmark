@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!--suppress XmlUnboundNsPrefix, XmlUnboundNsPrefix -->
 <deployment>
     <cluster hostcount="1" kfactor="0" />
     <httpd enabled="true">

@@ -1,8 +1,6 @@
 package connection_benchmark;
 
 import java.util.Arrays;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 import org.voltdb.CLIConfig;
@@ -10,8 +8,6 @@ import org.voltdb.client.Client;
 import org.voltdb.client.ClientConfig;
 import org.voltdb.client.ClientFactory;
 import org.voltdb.client.ClientResponse;
-import org.voltdb.client.ClientStats;
-import org.voltdb.client.ClientStatsContext;
 import org.voltdb.client.ClientStatusListenerExt;
 import org.voltdb.client.ProcedureCallback;
 
@@ -21,39 +17,33 @@ import java.io.*;
 public class ConnectionBenchmark {
 
     // handy, rather than typing this out several times
-    static final String HORIZONTAL_RULE =
+    private static final String HORIZONTAL_RULE =
             "----------" + "----------" + "----------" + "----------" +
             "----------" + "----------" + "----------" + "----------" + "\n";
 
     // validated command line configuration
-    final BenchmarkConfig config;
-    
-	// Reference to the database connection we will use
-    Client client;
-	
-	long benchmarkStartTime;
-	long benchmarkEndTime;
+    private final BenchmarkConfig config;
 
-	long totalTimeMilli = 0;
-	long connectTimeMilli = 0;
-	long procTimeMilli = 0;
-	long disconnectTimeMilli = 0;
-	
-	long connectionStartTime;
-	long connectionEndTime;
+	private long totalTimeMilli = 0;
+	private long connectTimeMilli = 0;
+	private long procTimeMilli = 0;
+	private long disconnectTimeMilli = 0;
 
-	long procCallsStartTime;
-	long procCallsEndTime;
+	private long connectionStartTime;
+	private long connectionEndTime;
 
-	long disconnectionStartTime;
-	long disconnectionEndTime;
+	private long procCallsStartTime;
+	private long procCallsEndTime;
+
+	private long disconnectionStartTime;
+	private long disconnectionEndTime;
 
     // overall success/failure counts
-    AtomicLong totalCalls = new AtomicLong(0);
-    AtomicLong successCalls = new AtomicLong(0);
-    AtomicLong failedCalls = new AtomicLong(0);
-    
-    /**
+	private final AtomicLong totalCalls = new AtomicLong(0);
+    private final AtomicLong successCalls = new AtomicLong(0);
+    private final AtomicLong failedCalls = new AtomicLong(0);
+
+	/**
      * Uses included {@link CLIConfig} class to
      * declaratively state command line options with defaults
      * and validation.
@@ -61,25 +51,31 @@ public class ConnectionBenchmark {
     static class BenchmarkConfig extends CLIConfig {
 
         @Option(desc = "server to connect to.")
-        String server = "localhost:21212";
+		final
+		String server = "localhost:21212";
 /*
         @Option(desc = "CURRENTLY UNUSED: Maximum TPS rate for benchmark.")
         int ratelimit = Integer.MAX_VALUE;
 */
         @Option(desc = "User name for connection.")
-        String user = "";
+		final
+String user = "";
 
         @Option(desc = "Password for connection.")
-        String password = "";
+		final
+		String password = "";
 
         @Option(desc = "Number of connections to make (in serial) for the benchmark.")
+		final
 		int numberOfConnections = 1;
 
         @Option(desc = "Number of procedure calls (inserts) to make per connection for the benchmark.")
+		final
 		int numberOfProcCallsPerConnection = 1;
 
-        @Option(desc = "Client type - on of jdbc, native synch or native asynch (see run.sh)")
-        String clientType = "";
+        @Option(desc = "Client type - one of jdbc_client, jdbc_client_parallel, native_synch_client, native_synch_client_parallel, native_asynch_client or  native_asynch_client_parallel (see run.sh)")
+		final
+		String clientType = "";
 	}
 
     /**
@@ -88,15 +84,18 @@ public class ConnectionBenchmark {
      *
      * @param config Parsed & validated CLI options.
      */
-    public ConnectionBenchmark(BenchmarkConfig config) {
+	private ConnectionBenchmark(BenchmarkConfig config) {
         this.config = config;
 
 		//System.out.printf("clientType is: %s\n", config.clientType);
 
 		// valid clientType?
 		if (! config.clientType.equals("jdbc_client") &&
+			! config.clientType.equals("jdbc_client_parallel") &&
 			! config.clientType.equals("native_synch_client") &&
-			! config.clientType.equals("native_asynch_client")) {
+			! config.clientType.equals("native_synch_client_parallel") &&
+			! config.clientType.equals("native_asynch_client") &&
+			! config.clientType.equals("native_asynch_client_parallel")) {
 				throw new IllegalArgumentException("Uncatered for clientType");
 		}
 		
@@ -113,12 +112,33 @@ public class ConnectionBenchmark {
 	 * This is only applicable for the native client asynchronous case.
      */
 
-	 class StatusListener extends ClientStatusListenerExt {
-        @Override
-        public void connectionLost(String hostname, int port, int connectionsLeft, DisconnectCause cause) {
-			//System.Out.printf("Connection to %s:%d was lost: %s. Number of connections left is: %d\n", hostname, port, cause, connectionsLeft);
-        }
-    }
+	private class MyStatusListener extends ClientStatusListenerExt {
+
+		@Override
+		public void connectionLost(String hostname, int port, int connectionsLeft, DisconnectCause cause) {
+			System.err.printf("MyStatusListener: A connection to the database has been lost. There are %d connections remaining.\n", connectionsLeft);
+            System.err.flush();
+		}
+		
+		@Override
+		public void backpressure(boolean status) {
+			System.err.println("MyStatusListener: Backpressure from the database is causing a delay in processing requests.");
+            System.err.flush();
+		}
+		
+		@Override
+		public void uncaughtException(ProcedureCallback callback, ClientResponse r, Throwable e) {
+			System.err.println("MyStatusListener: An error has occurred in a callback procedure. Check the following stack trace for details.");
+			e.printStackTrace();
+            System.err.flush();
+		}
+		
+		@Override
+		public void lateProcedureResponse(ClientResponse response, String hostname, int port) {
+			System.err.printf("MyStatusListener: A procedure that timed out on host %s:%d has now responded.\n", hostname, port);
+            System.err.flush();
+		}
+	}
 
     /**
      * Connect to a single server with retry. Limited exponential backoff.
@@ -128,7 +148,7 @@ public class ConnectionBenchmark {
      * @param server hostname:port or just hostname (hostname can be ip).
      */
 /*
-	void connectToOneServerWithRetry(String server) {
+	 void connectToOneServerWithRetry(String server) {
         int sleep = 1000;
         while (true) {
             try {
@@ -136,8 +156,9 @@ public class ConnectionBenchmark {
                 break;
             }
             catch (Exception e) {
-                System.err.printf("Connection failed - retrying in %d second(s).\n", sleep / 1000);
-                try { Thread.sleep(sleep); } catch (Exception interruted) {}
+                System.err.printf("connectToOneServerWithRetry(): Connection failed - retrying in %d second(s).\n", sleep / 1000);
+                System.err.flush();
+                //try { Thread.sleep(sleep); } catch (Exception interrupted) {}
                 if (sleep < 8000) sleep += sleep;
             }
         }
@@ -152,7 +173,7 @@ public class ConnectionBenchmark {
      * syntax (where :port is optional).
      * @throws InterruptedException if anything bad happens with the threads.
      */
-/*   Only catering for 1 server
+/*   Commented out as only catering for 1 server
 	 void connect(String servers) throws InterruptedException {
         System.out.println("Connecting to VoltDB...");
 
@@ -178,7 +199,7 @@ public class ConnectionBenchmark {
      * Tracks response types.
      *
      */
-    class CountCallback implements ProcedureCallback {
+	private class MyProcedureCallback implements ProcedureCallback {
         @Override
         public void clientCallback(ClientResponse response) throws Exception {
             totalCalls.incrementAndGet();
@@ -187,7 +208,7 @@ public class ConnectionBenchmark {
             }
             else {
                 failedCalls.incrementAndGet();
-                System.err.println("Procedure returned with error: " + response.getStatusString());
+                System.err.println("MyProcedureCallback: Procedure returned with error: " + response.getStatusString());
                 System.err.flush();
             }
         }
@@ -211,28 +232,110 @@ public class ConnectionBenchmark {
 
     /**
      * Control benchmark code.
-     * Setup the benchmark counters, control the looping, output the results.
+     * Setup the benchmark counters, control the looping and whether serial or parallel output the results.
      *
      * @throws Exception if anything unexpected happens.
      */
-    public void runBenchmark() throws Exception {
-		System.out.println("\n" + HORIZONTAL_RULE + " Benchmark Starts\n" + HORIZONTAL_RULE);
+	private void runBenchmark() throws Exception {
 		
-		benchmarkStartTime = System.currentTimeMillis();
+        final CountDownLatch connections = new CountDownLatch(config.numberOfConnections);
+
+		System.out.println("\n" + HORIZONTAL_RULE + " Benchmark Starts\n" + HORIZONTAL_RULE);
+
+		long benchmarkStartTime = System.currentTimeMillis();
 		
 		for (int i=0; i<config.numberOfConnections; i++) {
 
-			if (config.clientType.equals("jdbc_client")) {
-				runJdbcIteration(i);
-			} else if  (config.clientType.equals("native_synch_client")) {
-				runNativeSynchIteration(i);
-			} else if  (config.clientType.equals("native_asynch_client")) {
-				runNativeAsynchIteration(i);
+			switch (config.clientType) {
+				case "jdbc_client":
+					runJdbcIteration(i);
+					break;
+				case "jdbc_client_parallel":
+
+					int client_id_hack = i;
+
+					// run a new thread for each connection so that they happen in parallel
+					new Thread(new Runnable() {
+						final int p = client_id_hack;
+
+						@Override
+						public void run() {
+							try {
+								Thread.sleep(5000); // this is to try to spin up as many threads as possible concurrently (i.e. so that the ones that start first still exist)
+								System.out.printf("Successfully created jdbc client for client_id %d\n", p);
+								runJdbcIteration(p);
+							} catch (Exception e) {
+								System.err.printf("runBenchmark(): Something uncatered for  happened in a thread!!!... %s \n", e.getMessage());
+								e.printStackTrace();
+								System.err.flush();
+							} finally {
+								connections.countDown();
+							}
+						}
+					}).start();
+					break;
+				case "native_synch_client":
+					runNativeSynchIteration(i);
+					break;
+				case "native_synch_client_parallel":
+
+					client_id_hack = i;
+
+					// run a new thread for each connection so that they happen in parallel
+					new Thread(new Runnable() {
+						final int p = client_id_hack;
+
+						@Override
+						public void run() {
+							try {
+								Thread.sleep(5000); // this is to try to spin up as many threads as possible concurrently (i.e. so that the ones that start first still exist)
+								System.out.printf("Successfully created native synch client for client_id %d\n", p);
+								runNativeSynchIteration(p);
+							} catch (Exception e) {
+								System.err.printf("runBenchmark(): Something uncatered for  happened in a thread!!!... %s \n", e.getMessage());
+								e.printStackTrace();
+								System.err.flush();
+							} finally {
+								connections.countDown();
+							}
+						}
+					}).start();
+					break;
+				case "native_asynch_client":
+					runNativeAsynchIteration(i);
+					break;
+				case "native_asynch_client_parallel":
+
+					client_id_hack = i;
+
+					// run a new thread for each connection so that they happen in parallel
+					new Thread(new Runnable() {
+						final int p = client_id_hack;
+
+						@Override
+						public void run() {
+							try {
+								Thread.sleep(5000); // this is to try to spin up as many threads as possible concurrently (i.e. so that the ones that start first still exist)
+								System.out.printf("Successfully created native asynch client for client_id %d\n", p);
+								runNativeAsynchIteration(p);
+							} catch (Exception e) {
+								System.err.printf("runBenchmark(): Something uncatered for  happened in a thread!!!... %s \n", e.getMessage());
+								e.printStackTrace();
+								System.err.flush();
+							} finally {
+								connections.countDown();
+							}
+						}
+					}).start();
+					break;
 			}
-			
 		}
 
-		benchmarkEndTime = System.currentTimeMillis();
+		if  (config.clientType.equals("native_asynch_client_parallel") || config.clientType.equals("jdbc_client_parallel") || config.clientType.equals("native_synch_client_parallel")) {
+			connections.await();
+		}
+
+		long benchmarkEndTime = System.currentTimeMillis();
 		long time = Math.round((benchmarkEndTime - benchmarkStartTime) / 1000.0);
 
 		System.out.println("\n" + HORIZONTAL_RULE + " Benchmark Ends\n" + HORIZONTAL_RULE);
@@ -261,10 +364,8 @@ public class ConnectionBenchmark {
     /**
      * Core benchmark code for a jdbc client iteration
      * Connect. Call proc n times. Disconnect. Maintain counters.
-     *
-     * @throws Exception if anything unexpected happens.
      */
-    public void runJdbcIteration(int client_id) throws Exception {
+	private void runJdbcIteration(int client_id) {
 
         String driver = "org.voltdb.jdbc.Driver";
         String url = "jdbc:voltdb://" + config.server;
@@ -277,7 +378,7 @@ public class ConnectionBenchmark {
             // Load driver. Create connection.
             Class.forName(driver);
             Connection conn = DriverManager.getConnection(url);
-
+			
 			connectionEndTime = System.currentTimeMillis();
 
 			// store time spent connecting
@@ -344,11 +445,11 @@ public class ConnectionBenchmark {
     /**
      * Core benchmark code for a native synchronous client iteration
      * Connect. Call proc n times. Disconnect. Maintain counters.
-     *
-     * @throws Exception if anything unexpected happens.
      */
-    public void runNativeSynchIteration(int client_id) throws Exception {
+	private void runNativeSynchIteration(int client_id) {
         
+		Client client;
+		
         try {
 
 			// figure out time spent connecting
@@ -408,7 +509,7 @@ public class ConnectionBenchmark {
 			// store time spent in proc
 			totalTimeMilli+=(disconnectionEndTime-disconnectionStartTime);
 			disconnectTimeMilli+=(disconnectionEndTime-disconnectionStartTime);
-			
+			 
         } catch (Exception e) {
 			failedCalls.incrementAndGet();
             e.printStackTrace();
@@ -421,57 +522,90 @@ public class ConnectionBenchmark {
      *
      * @throws Exception if anything unexpected happens.
      */
-    public void runNativeAsynchIteration(int client_id) throws Exception {
+	private void runNativeAsynchIteration(int client_id) throws Exception {
+		
+		// try to connect and call proc with exponential backoff
+		// Note: will continue to try for ever under various circumstances...
+		// if something is long running then check the log
 
-		// figure out time spent connecting
 		connectionStartTime = System.currentTimeMillis();
-
-		// connect
-		ClientConfig clientConfig = new ClientConfig(config.user, config.password);
-		client = ClientFactory.createClient(clientConfig);
-		client.createConnection(config.server); // inline, no checking for errors (!) in order to get best time
-
+		ClientConfig clientConfig = new ClientConfig(config.user, config.password, new MyStatusListener());
+		Client client = ClientFactory.createClient(clientConfig);
 		connectionEndTime = System.currentTimeMillis();
-
 		// store time spent connecting
 		totalTimeMilli+=(connectionEndTime-connectionStartTime);
 		connectTimeMilli+=(connectionEndTime-connectionStartTime);
 
-		// figure out time spent in proc
-		procCallsStartTime = System.currentTimeMillis();
-					
-		for (int i=0; i<config.numberOfProcCallsPerConnection; i++) {
+        int sleep = 1000;
 
-			// synchronous call
-			client.callProcedure(new CountCallback(),
-								"create_client_location",
-								 i,
-								 client_id,
-								 1000.0,
-								 1500.0,
-								 "some asynch text to store");
+        while (true) {
+			// try to get a connection
+            try {
+				// figure out time spent connecting
+				connectionStartTime = System.currentTimeMillis();
+                client.createConnection(config.server);
+            } 
+            catch (IOException e) {
+				// Note this should also catch NoConnectionsException
+                System.err.printf("runNativeAsynchIteration() A: Connection failed: %s - retrying in %d second(s).\n", e.getMessage(), sleep / 1000);
+                System.err.flush();
+                Thread.sleep(sleep);
+                if (sleep < 8000) sleep += sleep;
+            }
+			finally {
+				connectionEndTime = System.currentTimeMillis();
+				// store time spent connecting
+				totalTimeMilli+=(connectionEndTime-connectionStartTime);
+				connectTimeMilli+=(connectionEndTime-connectionStartTime);
+			}
+
+			// try to call the stored procedure
+            try {
+				// figure out time spent in proc
+				procCallsStartTime = System.currentTimeMillis();
+							
+				for (int i=0; i<config.numberOfProcCallsPerConnection; i++) {
+
+					// synchronous call
+					client.callProcedure(new MyProcedureCallback(),
+										"create_client_location",
+										 i,
+										 client_id,
+										 1000.0,
+										 1500.0,
+										 "some asynch text to store");
+				}
+                break;
+            } 
+            catch (IOException e) {
+				// Note this should also catch NoConnectionsException
+                System.err.printf("runNativeAsynchIteration() B: Connection failed: %s - retrying in %d second(s).\n", e.getMessage(), sleep / 1000);
+                System.err.flush();
+                Thread.sleep(sleep);
+                if (sleep < 8000) sleep += sleep;
+            }
+			finally {
+				// block until all outstanding txns return
+				client.drain();
+
+				procCallsEndTime = System.currentTimeMillis();
+
+				// store time spent in proc
+				totalTimeMilli+=(procCallsEndTime-procCallsStartTime);
+				procTimeMilli+=(procCallsEndTime-procCallsStartTime);
+
+				// figure out time spent disconnecting
+				disconnectionStartTime = System.currentTimeMillis();
+				
+				// close down the client connections
+				client.close();
+
+				disconnectionEndTime = System.currentTimeMillis();
+
+				// store time spent in proc
+				totalTimeMilli+=(disconnectionEndTime-disconnectionStartTime);
+				disconnectTimeMilli+=(disconnectionEndTime-disconnectionStartTime);
+			}
 		}
-
-		// block until all outstanding txns return
-		client.drain();
-
-		procCallsEndTime = System.currentTimeMillis();
-
-		// store time spent in proc
-		totalTimeMilli+=(procCallsEndTime-procCallsStartTime);
-		procTimeMilli+=(procCallsEndTime-procCallsStartTime);
-
-		// figure out time spent disconnecting
-		disconnectionStartTime = System.currentTimeMillis();
-		
-		// close down the client connections
-		client.close();
-
-		disconnectionEndTime = System.currentTimeMillis();
-
-		// store time spent in proc
-		totalTimeMilli+=(disconnectionEndTime-disconnectionStartTime);
-		disconnectTimeMilli+=(disconnectionEndTime-disconnectionStartTime);
-		
     }
 }
