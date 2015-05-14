@@ -105,6 +105,19 @@ function jdbc_client() {
 }
 
 # run the benchmark
+function jdbc_client_parallel() {
+
+    jars-ifneeded
+
+    #java -classpath $CLIENTCLASSPATH -Xmx2048m -Xss512k -Dlog4j.configuration=file://$LOG4J \
+    java -classpath $CLIENTCLASSPATH -Dlog4j.configuration=file://$LOG4J \
+        connection_benchmark.ConnectionBenchmark \
+        --clientType=jdbc_client_parallel \
+        --numberOfConnections=$1 \
+        --numberOfProcCallsPerConnection=$2
+}
+
+# run the benchmark
 function native_synch_client() {
 
     jars-ifneeded
@@ -112,6 +125,18 @@ function native_synch_client() {
     java -classpath $CLIENTCLASSPATH -Dlog4j.configuration=file://$LOG4J \
         connection_benchmark.ConnectionBenchmark \
         --clientType=native_synch_client \
+        --numberOfConnections=$1 \
+        --numberOfProcCallsPerConnection=$2
+}
+
+# run the benchmark
+function native_synch_client_parallel() {
+
+    jars-ifneeded
+
+    java -classpath $CLIENTCLASSPATH -Dlog4j.configuration=file://$LOG4J \
+        connection_benchmark.ConnectionBenchmark \
+        --clientType=native_synch_client_parallel \
         --numberOfConnections=$1 \
         --numberOfProcCallsPerConnection=$2
 }
@@ -128,10 +153,25 @@ function native_asynch_client() {
         --numberOfProcCallsPerConnection=$2
 }
 
+# run the benchmark
+function native_asynch_client_parallel() {
+
+    jars-ifneeded
+
+    java -classpath $CLIENTCLASSPATH -Dlog4j.configuration=file://$LOG4J \
+        connection_benchmark.ConnectionBenchmark \
+        --clientType=native_asynch_client_parallel \
+        --numberOfConnections=$1 \
+        --numberOfProcCallsPerConnection=$2
+}
+
 # Run the target passed as the first arg on the command line
 # If no first arg, run server
 if [ $1 = "jdbc_client" ]; then $1 $2 $3; exit; fi
+if [ $1 = "jdbc_client_parallel" ]; then $1 $2 $3; exit; fi
 if [ $1 = "native_synch_client" ]; then $1 $2 $3; exit; fi
+if [ $1 = "native_synch_client_parallel" ]; then $1 $2 $3; exit; fi
 if [ $1 = "native_asynch_client" ]; then $1 $2 $3; exit; fi
+if [ $1 = "native_asynch_client_parallel" ]; then $1 $2 $3; exit; fi
 if [ $# -gt 1 ]; then help; exit 1; fi
 if [ $# = 1 ]; then $1; else server; fi
