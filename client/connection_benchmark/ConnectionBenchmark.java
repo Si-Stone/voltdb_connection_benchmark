@@ -14,7 +14,7 @@ import org.voltdb.client.ProcedureCallback;
 import java.sql.*;
 import java.io.*;
 
-public class ConnectionBenchmark {
+class ConnectionBenchmark {
 
     // handy, rather than typing this out several times
     private static final String HORIZONTAL_RULE =

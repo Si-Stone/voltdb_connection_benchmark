@@ -18,11 +18,11 @@ number_of_connections=5000
 number_of_proc_calls=1
 
 file=rpt_many_connections_1_proc_call_native_asynch_client_parallel.txt
-sqlcmd < truncate.sql > $file 2>&1
+sqlcmd < truncate.sql > ${file} 2>&1
 #./run.sh native_asynch_client_parallel $number_of_connections $number_of_proc_calls >> $file 2>&1
-./run.sh jdbc_client_parallel $number_of_connections $number_of_proc_calls >> $file 2>&1
+./run.sh jdbc_client_parallel ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
 #./run.sh native_synch_client_parallel $number_of_connections $number_of_proc_calls >> $file 2>&1
-sqlcmd < sanity_check_rowcount.sql >> $file 2>&1
+sqlcmd < sanity_check_rowcount.sql >> ${file} 2>&1
 
 echo ended
 date

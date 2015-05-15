@@ -11,13 +11,13 @@ else
     echo "The VoltDB scripts are not in your PATH."
     echo "For ease of use, add the VoltDB bin directory: "
     echo
-    echo $VOLTDB_BIN
+    echo ${VOLTDB_BIN}
     echo
     echo "to your PATH."
     echo
 fi
 # move voltdb commands into path for this script
-PATH=$VOLTDB_BIN:$PATH
+PATH=${VOLTDB_BIN}:$PATH
 
 # installation layout has all libraries in $VOLTDB_ROOT/lib/voltdb
 if [ -d "$VOLTDB_BIN/../lib/voltdb" ]; then
@@ -31,12 +31,12 @@ else
     VOLTDB_VOLTDB="$VOLTDB_BASE/voltdb"
 fi
 
-APPCLASSPATH=$CLASSPATH:$({ \
+readonly APPCLASSPATH=${CLASSPATH}:$({ \
     \ls -1 "$VOLTDB_VOLTDB"/voltdb-*.jar; \
     \ls -1 "$VOLTDB_LIB"/*.jar; \
     \ls -1 "$VOLTDB_LIB"/extension/*.jar; \
 } 2> /dev/null | paste -sd ':' - )
-CLIENTCLASSPATH=connection_benchmark-client.jar:$CLASSPATH:$({ \
+readonly CLIENTCLASSPATH=connection_benchmark-client.jar:${CLASSPATH}:$({ \
     \ls -1 "$VOLTDB_VOLTDB"/voltdbclient-*.jar; \
     \ls -1 "$VOLTDB_LIB"/commons-cli-1.2.jar; \
 } 2> /dev/null | paste -sd ':' - )
@@ -59,7 +59,7 @@ function cleanall() {
 # compile the source code for procedures and the client into jarfiles
 function jars() {
     # compile java source
-    javac -target 1.8 -source 1.8 -classpath $CLIENTCLASSPATH \
+    javac -target 1.8 -source 1.8 -classpath ${CLIENTCLASSPATH} \
         client/connection_benchmark/*.java
     jar cf connection_benchmark-client.jar -C client connection_benchmark
     # remove compiled .class files
@@ -85,7 +85,7 @@ function server() {
 # Use this target for argument help
 function client-help() {
     jars-ifneeded
-    java -classpath $CLIENTCLASSPATH connection_benchmark.ConnectionBenchmark --help
+    java -classpath ${CLIENTCLASSPATH} connection_benchmark.ConnectionBenchmark --help
 }
 
 function help() {
@@ -97,7 +97,7 @@ function jdbc_client() {
 
     jars-ifneeded
 
-    java -classpath $CLIENTCLASSPATH -Dlog4j.configuration=file://$LOG4J \
+    java -classpath ${CLIENTCLASSPATH} -Dlog4j.configuration=file://${LOG4J} \
         connection_benchmark.ConnectionBenchmark \
         --clientType=jdbc_client \
         --numberOfConnections=$1 \
@@ -110,7 +110,7 @@ function jdbc_client_parallel() {
     jars-ifneeded
 
     #java -classpath $CLIENTCLASSPATH -Xmx2048m -Xss512k -Dlog4j.configuration=file://$LOG4J \
-    java -classpath $CLIENTCLASSPATH -Dlog4j.configuration=file://$LOG4J \
+    java -classpath ${CLIENTCLASSPATH} -Dlog4j.configuration=file://${LOG4J} \
         connection_benchmark.ConnectionBenchmark \
         --clientType=jdbc_client_parallel \
         --numberOfConnections=$1 \
@@ -122,7 +122,7 @@ function native_synch_client() {
 
     jars-ifneeded
 
-    java -classpath $CLIENTCLASSPATH -Dlog4j.configuration=file://$LOG4J \
+    java -classpath ${CLIENTCLASSPATH} -Dlog4j.configuration=file://${LOG4J} \
         connection_benchmark.ConnectionBenchmark \
         --clientType=native_synch_client \
         --numberOfConnections=$1 \
@@ -134,7 +134,7 @@ function native_synch_client_parallel() {
 
     jars-ifneeded
 
-    java -classpath $CLIENTCLASSPATH -Dlog4j.configuration=file://$LOG4J \
+    java -classpath ${CLIENTCLASSPATH} -Dlog4j.configuration=file://${LOG4J} \
         connection_benchmark.ConnectionBenchmark \
         --clientType=native_synch_client_parallel \
         --numberOfConnections=$1 \
@@ -146,7 +146,7 @@ function native_asynch_client() {
 
     jars-ifneeded
 
-    java -classpath $CLIENTCLASSPATH -Dlog4j.configuration=file://$LOG4J \
+    java -classpath ${CLIENTCLASSPATH} -Dlog4j.configuration=file://${LOG4J} \
         connection_benchmark.ConnectionBenchmark \
         --clientType=native_asynch_client \
         --numberOfConnections=$1 \
@@ -158,7 +158,7 @@ function native_asynch_client_parallel() {
 
     jars-ifneeded
 
-    java -classpath $CLIENTCLASSPATH -Dlog4j.configuration=file://$LOG4J \
+    java -classpath ${CLIENTCLASSPATH} -Dlog4j.configuration=file://${LOG4J} \
         connection_benchmark.ConnectionBenchmark \
         --clientType=native_asynch_client_parallel \
         --numberOfConnections=$1 \
