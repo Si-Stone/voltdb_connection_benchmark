@@ -43,6 +43,15 @@ class ConnectionBenchmark {
     private final AtomicLong successCalls = new AtomicLong(0);
     private final AtomicLong failedCalls = new AtomicLong(0);
 
+    private enum ClientType {
+        JDBC_CLIENT,
+        JDBC_CLIENT_PARALLEL,
+        NATIVE_SYNCH_CLIENT,
+        NATIVE_SYNCH_CLIENT_PARALLEL,
+        NATIVE_ASYNCH_CLIENT,
+        NATIVE_ASYNCH_CLIENT_PARALLEL
+    }
+
     /**
      * Uses included {@link CLIConfig} class to
      * declaratively state command line options with defaults
@@ -68,9 +77,9 @@ class ConnectionBenchmark {
         @Option(desc = "Number of procedure calls (inserts) to make per connection for the benchmark.")
         final int numberOfProcCallsPerConnection = 1;
 
-        @Option(desc = "Client type - one of jdbc_client, jdbc_client_parallel, native_synch_client" + 
-                ", native_synch_client_parallel, native_asynch_client or  native_asynch_client_parallel (see run.sh)")
-        final String clientType = "";
+        @Option(desc = "Client type - ONE OF JDBC_CLIENT, JDBC_CLIENT_PARALLEL, NATIVE_SYNCH_CLIENT" +
+                ", NATIVE_SYNCH_CLIENT_PARALLEL, NATIVE_ASYNCH_CLIENT OR  NATIVE_ASYNCH_CLIENT_PARALLEL (see run.sh)")
+        final ClientType clientType = ClientType.NATIVE_ASYNCH_CLIENT;
     }
 
     /**
@@ -85,6 +94,7 @@ class ConnectionBenchmark {
         //System.out.printf("clientType is: %s\n", config.clientType);
 
         // valid clientType?
+/* todo: remove?
         if (! config.clientType.equals("jdbc_client") &&
             ! config.clientType.equals("jdbc_client_parallel") &&
             ! config.clientType.equals("native_synch_client") &&
@@ -93,7 +103,7 @@ class ConnectionBenchmark {
             ! config.clientType.equals("native_asynch_client_parallel")) {
                 throw new IllegalArgumentException("Uncatered for clientType");
         }
-        
+*/
         
         System.out.print(HORIZONTAL_RULE);
         System.out.println(" Command Line Configuration");
@@ -249,10 +259,10 @@ class ConnectionBenchmark {
         for (int i=0; i<config.numberOfConnections; i++) {
 
             switch (config.clientType) {
-                case "jdbc_client":
+                case JDBC_CLIENT:
                     runJdbcIteration(i);
                     break;
-                case "jdbc_client_parallel":
+                case JDBC_CLIENT_PARALLEL:
 
                     int client_id_hack = i;
 
@@ -279,10 +289,10 @@ class ConnectionBenchmark {
                         }
                     }).start();
                     break;
-                case "native_synch_client":
+                case NATIVE_SYNCH_CLIENT:
                     runNativeSynchIteration(i);
                     break;
-                case "native_synch_client_parallel":
+                case NATIVE_SYNCH_CLIENT_PARALLEL:
 
                     client_id_hack = i;
 
@@ -308,10 +318,10 @@ class ConnectionBenchmark {
                         }
                     }).start();
                     break;
-                case "native_asynch_client":
+                case NATIVE_ASYNCH_CLIENT:
                     runNativeAsynchIteration(i);
                     break;
-                case "native_asynch_client_parallel":
+                case NATIVE_ASYNCH_CLIENT_PARALLEL:
 
                     client_id_hack = i;
 
@@ -341,9 +351,9 @@ class ConnectionBenchmark {
             }
         }
 
-        if  (config.clientType.equals("native_asynch_client_parallel") ||
-                config.clientType.equals("jdbc_client_parallel") ||
-                config.clientType.equals("native_synch_client_parallel")) {
+        if  (config.clientType.equals(ClientType.NATIVE_ASYNCH_CLIENT_PARALLEL) ||
+                config.clientType.equals(ClientType.JDBC_CLIENT_PARALLEL) ||
+                config.clientType.equals(ClientType.NATIVE_SYNCH_CLIENT_PARALLEL)) {
             connections.await();
         }
 
