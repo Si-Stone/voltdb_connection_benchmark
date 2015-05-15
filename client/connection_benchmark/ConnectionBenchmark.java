@@ -43,7 +43,7 @@ class ConnectionBenchmark {
     private final AtomicLong successCalls = new AtomicLong(0);
     private final AtomicLong failedCalls = new AtomicLong(0);
 
-	/** todo
+	/**
      * Uses included {@link CLIConfig} class to
      * declaratively state command line options with defaults
      * and validation.
