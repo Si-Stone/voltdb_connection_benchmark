@@ -19,17 +19,17 @@ number_of_proc_calls=1
 
 file=rpt_many_connections_1_proc_call_native_synch_client.txt
 sqlcmd < truncate.sql > ${file} 2>&1
-./run.sh NATIVE_SYNCH_CLIENT ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
+./run.sh native_synch_client ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
 sqlcmd < sanity_check_rowcount.sql >> ${file} 2>&1
 
 file=rpt_many_connections_1_proc_call_native_asynch_client.txt
 sqlcmd < truncate.sql > ${file} 2>&1
-./run.sh NATIVE_ASYNCH_CLIENT ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
+./run.sh native_asynch_client ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
 sqlcmd < sanity_check_rowcount.sql >> ${file} 2>&1
 
 file=rpt_many_connections_1_proc_call_jdbc_client.txt
 sqlcmd < truncate.sql > ${file} 2>&1
-./run.sh JDBC_CLIENT ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
+./run.sh jdbc_client ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
 sqlcmd < sanity_check_rowcount.sql >> ${file} 2>&1
 
 
@@ -40,17 +40,17 @@ number_of_proc_calls=10000
 
 file=rpt_1_connection_many_proc_calls_native_synch_client.txt
 sqlcmd < truncate.sql > ${file} 2>&1
-./run.sh NATIVE_SYNCH_CLIENT ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
+./run.sh native_synch_client ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
 sqlcmd < sanity_check_rowcount.sql >> ${file} 2>&1
 
 file=rpt_1_connection_many_proc_calls_native_asynch_client.txt
 sqlcmd < truncate.sql > ${file} 2>&1
-./run.sh NATIVE_ASYNCH_CLIENT ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
+./run.sh native_asynch_client ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
 sqlcmd < sanity_check_rowcount.sql >> ${file} 2>&1
 
 file=rpt_1_connection_many_proc_call_jdbc_client.txt
 sqlcmd < truncate.sql > ${file} 2>&1
-./run.sh JDBC_CLIENT ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
+./run.sh jdbc_client ${number_of_connections} ${number_of_proc_calls} >> ${file} 2>&1
 sqlcmd < sanity_check_rowcount.sql >> ${file} 2>&1
 
 echo ended
