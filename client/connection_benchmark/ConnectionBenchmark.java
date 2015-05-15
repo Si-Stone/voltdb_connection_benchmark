@@ -43,7 +43,7 @@ class ConnectionBenchmark {
     private final AtomicLong successCalls = new AtomicLong(0);
     private final AtomicLong failedCalls = new AtomicLong(0);
 
-	/**
+	/** todo
      * Uses included {@link CLIConfig} class to
      * declaratively state command line options with defaults
      * and validation.
@@ -51,27 +51,22 @@ class ConnectionBenchmark {
     static class BenchmarkConfig extends CLIConfig {
 
         @Option(desc = "server to connect to.")
-		final
-		String server = "localhost:21212";
+		final String server = "localhost:21212";
 /*
         @Option(desc = "CURRENTLY UNUSED: Maximum TPS rate for benchmark.")
         int ratelimit = Integer.MAX_VALUE;
 */
         @Option(desc = "User name for connection.")
-		final
-String user = "";
+		final String user = "";
 
         @Option(desc = "Password for connection.")
-		final
-		String password = "";
+		final String password = "";
 
         @Option(desc = "Number of connections to make (in serial) for the benchmark.")
-		final
-		int numberOfConnections = 1;
+		final int numberOfConnections = 1;
 
         @Option(desc = "Number of procedure calls (inserts) to make per connection for the benchmark.")
-		final
-		int numberOfProcCallsPerConnection = 1;
+		final int numberOfProcCallsPerConnection = 1;
 
         @Option(desc = "Client type - one of jdbc_client, jdbc_client_parallel, native_synch_client, native_synch_client_parallel, native_asynch_client or  native_asynch_client_parallel (see run.sh)")
 		final
@@ -152,7 +147,7 @@ String user = "";
         int sleep = 1000;
         while (true) {
             try {
-                client.createConnection(server);
+                client.createConnection(server);	
                 break;
             }
             catch (Exception e) {
