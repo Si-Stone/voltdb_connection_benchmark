@@ -167,11 +167,11 @@ function native_asynch_client_parallel() {
 
 # Run the target passed as the first arg on the command line
 # If no first arg, run server
-if [ $1 = "jdbc_client" ]; then $1 $2 $3; exit; fi
-if [ $1 = "jdbc_client_parallel" ]; then $1 $2 $3; exit; fi
-if [ $1 = "native_synch_client" ]; then $1 $2 $3; exit; fi
-if [ $1 = "native_synch_client_parallel" ]; then $1 $2 $3; exit; fi
-if [ $1 = "native_asynch_client" ]; then $1 $2 $3; exit; fi
-if [ $1 = "native_asynch_client_parallel" ]; then $1 $2 $3; exit; fi
+if [ $1 = "JDBC_CLIENT" ]; then $1 $2 $3; exit; fi
+if [ $1 = "JDBC_CLIENT_PARALLEL" ]; then $1 $2 $3; exit; fi
+if [ $1 = "NATIVE_SYNCH_CLIENT" ]; then $1 $2 $3; exit; fi
+if [ $1 = "NATIVE_SYNCH_CLIENT_PARALLEL" ]; then $1 $2 $3; exit; fi
+if [ $1 = "NATIVE_ASYNCH_CLIENT" ]; then $1 $2 $3; exit; fi
+if [ $1 = "NATIVE_ASYNCH_CLIENT_PARALLEL" ]; then $1 $2 $3; exit; fi
 if [ $# -gt 1 ]; then help; exit 1; fi
 if [ $# = 1 ]; then $1; else server; fi
