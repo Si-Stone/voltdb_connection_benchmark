@@ -8,7 +8,8 @@ tl;dr version:
 ==============
 
 start one node server with the deployment and catalog file provided
-run: run_all_benchmarks.sh
+ensure the latest java is compiled: ./run.sh jars
+run: ./run_all_benchmarks.sh
 see the rpt*.txt files output for time comparisons
 
 ---------------------------------------------------------------------------------
