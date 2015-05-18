@@ -5,7 +5,6 @@ import java.util.IllegalFormatCodePointException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.voltdb.CLIConfig;
 import org.voltdb.client.Client;
 import org.voltdb.client.ClientConfig;
