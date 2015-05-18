@@ -73,6 +73,9 @@ class ConnectionBenchmark {
         @Option(desc = "Client type - ONE OF JDBC_CLIENT, JDBC_CLIENT_PARALLEL, NATIVE_SYNCH_CLIENT" +
                 ", NATIVE_SYNCH_CLIENT_PARALLEL, NATIVE_ASYNCH_CLIENT OR  NATIVE_ASYNCH_CLIENT_PARALLEL (see run.sh)")
         String clientType = ""; // Note: CLIConfig does not cater for enums, so use string
+
+        @Option(desc = "Sleep time for each thread - used by parallel case. Milliseconds.")
+        int parallelSleepTimeMilli = 5000;
     }
 
     /**
@@ -84,20 +87,6 @@ class ConnectionBenchmark {
     private ConnectionBenchmark(BenchmarkConfig config) {
         this.config = config;
 
-        //System.out.printf("clientType is: %s\n", config.clientType);
-
-        // valid clientType?
-/* todo: remove?
-        if (! config.clientType.equals("jdbc_client") &&
-            ! config.clientType.equals("jdbc_client_parallel") &&
-            ! config.clientType.equals("native_synch_client") &&
-            ! config.clientType.equals("native_synch_client_parallel") &&
-            ! config.clientType.equals("native_asynch_client") &&
-            ! config.clientType.equals("native_asynch_client_parallel")) {
-                throw new IllegalArgumentException("Uncatered for clientType");
-        }
-*/
-        
         System.out.print(HORIZONTAL_RULE);
         System.out.println(" Command Line Configuration");
         System.out.println(HORIZONTAL_RULE);
@@ -267,8 +256,8 @@ class ConnectionBenchmark {
                         public void run() {
                             try {
                                 // the following is to try to spin up as many threads as possible concurrently
-                                // (i.e. so that the ones that start first are still in existence)
-                                Thread.sleep(10000);
+                                // (i.e. so that the ones that start first are in existence when last are spawned)
+                                Thread.sleep(config.parallelSleepTimeMilli);
                                 System.out.printf("Successfully created jdbc client for client_id %d\n", p);
                                 runJdbcIteration(p);
                             } catch (Exception e) {
@@ -297,8 +286,8 @@ class ConnectionBenchmark {
                         public void run() {
                             try {
                                 // the following is to try to spin up as many threads as possible concurrently
-                                // (i.e. so that the ones that start first are still in existence)
-                                Thread.sleep(10000);
+                                // (i.e. so that the ones that start first are in existence when last are spawned)
+                                Thread.sleep(config.parallelSleepTimeMilli);
                                 System.out.printf("Successfully created native synch client for client_id %d\n", p);
                                 runNativeSynchIteration(p);
                             } catch (Exception e) {
@@ -326,8 +315,8 @@ class ConnectionBenchmark {
                         public void run() {
                             try {
                                 // the following is to try to spin up as many threads as possible concurrently
-                                // (i.e. so that the ones that start first are still in existence)
-                                Thread.sleep(10000);
+                                // (i.e. so that the ones that start first are in existence when last are spawned)
+                                Thread.sleep(config.parallelSleepTimeMilli);
                                 System.out.printf("Successfully created native asynch client for client_id %d\n", p);
                                 runNativeAsynchIteration(p);
                             } catch (Exception e) {
