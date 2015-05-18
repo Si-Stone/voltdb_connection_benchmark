@@ -53,26 +53,26 @@ class ConnectionBenchmark {
     static class BenchmarkConfig extends CLIConfig {
 
         @Option(desc = "server to connect to.")
-        final String server = "localhost:21212";
+        String server = "localhost:21212";
 /*
         @Option(desc = "CURRENTLY UNUSED: Maximum TPS rate for benchmark.")
         int ratelimit = Integer.MAX_VALUE;
 */
         @Option(desc = "User name for connection.")
-        final String user = "";
+        String user = "";
 
         @Option(desc = "Password for connection.")
-        final String password = "";
+        String password = "";
 
         @Option(desc = "Number of connections to make (in serial) for the benchmark.")
-        final int numberOfConnections = 1;
+        int numberOfConnections = 1;
 
         @Option(desc = "Number of procedure calls (inserts) to make per connection for the benchmark.")
-        final int numberOfProcCallsPerConnection = 1;
+        int numberOfProcCallsPerConnection = 1;
 
         @Option(desc = "Client type - ONE OF JDBC_CLIENT, JDBC_CLIENT_PARALLEL, NATIVE_SYNCH_CLIENT" +
                 ", NATIVE_SYNCH_CLIENT_PARALLEL, NATIVE_ASYNCH_CLIENT OR  NATIVE_ASYNCH_CLIENT_PARALLEL (see run.sh)")
-        final String clientType = ""; // Note: CLIConfig does not cater for enums, so use string
+        String clientType = ""; // Note: CLIConfig does not cater for enums, so use string
     }
 
     /**
