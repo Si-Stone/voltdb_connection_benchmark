@@ -557,70 +557,57 @@ class ConnectionBenchmark {
                 // figure out time spent connecting
                 connectionStartTime = System.currentTimeMillis();
                 client.createConnection(config.server);
-            } 
-            catch (IOException e) {
+                break;
+            } catch (IOException e) {
                 // Note this should also catch NoConnectionsException
                 System.err.printf("runNativeAsynchIteration() A: " +
                         "Connection failed: %s - retrying in %d second(s).\n", e.getMessage(), sleep / 1000);
                 System.err.flush();
                 Thread.sleep(sleep);
                 if (sleep < 8000) sleep += sleep;
-            }
-            finally {
+            } finally {
                 connectionEndTime = System.currentTimeMillis();
                 // store time spent connecting
-                totalTimeMilli+=(connectionEndTime-connectionStartTime);
-                connectTimeMilli+=(connectionEndTime-connectionStartTime);
-            }
-
-            // try to call the stored procedure
-            try {
-                // figure out time spent in proc
-                procCallsStartTime = System.currentTimeMillis();
-                            
-                for (int i=0; i<config.numberOfProcCallsPerConnection; i++) {
-
-                    // synchronous call
-                    client.callProcedure(new MyProcedureCallback(),
-                                        "create_client_location",
-                                         i,
-                                         client_id,
-                                         1000.0,
-                                         1500.0,
-                                         "some asynch text to store");
-                }
-                break;
-            } 
-            catch (IOException e) {
-                // Note this should also catch NoConnectionsException
-                System.err.printf("runNativeAsynchIteration() B: " +
-                        "Connection failed: %s - retrying in %d second(s).\n", e.getMessage(), sleep / 1000);
-                System.err.flush();
-                Thread.sleep(sleep);
-                if (sleep < 8000) sleep += sleep;
-            }
-            finally {
-                // block until all outstanding txns return
-                client.drain();
-
-                procCallsEndTime = System.currentTimeMillis();
-
-                // store time spent in proc
-                totalTimeMilli+=(procCallsEndTime-procCallsStartTime);
-                procTimeMilli+=(procCallsEndTime-procCallsStartTime);
-
-                // figure out time spent disconnecting
-                disconnectionStartTime = System.currentTimeMillis();
-                
-                // close down the client connections
-                client.close();
-
-                disconnectionEndTime = System.currentTimeMillis();
-
-                // store time spent in proc
-                totalTimeMilli+=(disconnectionEndTime-disconnectionStartTime);
-                disconnectTimeMilli+=(disconnectionEndTime-disconnectionStartTime);
+                totalTimeMilli += (connectionEndTime - connectionStartTime);
+                connectTimeMilli += (connectionEndTime - connectionStartTime);
             }
         }
+
+        // call the stored procedure
+        // figure out time spent in proc
+        procCallsStartTime = System.currentTimeMillis();
+
+        for (int i=0; i<config.numberOfProcCallsPerConnection; i++) {
+
+            // synchronous call
+            client.callProcedure(new MyProcedureCallback(),
+                                "create_client_location",
+                                 i,
+                                 client_id,
+                                 1000.0,
+                                 1500.0,
+                                 "some asynch text to store");
+        }
+
+        // block until all outstanding txns return
+        client.drain();
+
+        procCallsEndTime = System.currentTimeMillis();
+
+        // store time spent in proc
+        totalTimeMilli+=(procCallsEndTime-procCallsStartTime);
+        procTimeMilli+=(procCallsEndTime-procCallsStartTime);
+
+        // figure out time spent disconnecting
+        disconnectionStartTime = System.currentTimeMillis();
+
+        // close down the client connections
+        client.close();
+
+        disconnectionEndTime = System.currentTimeMillis();
+
+        // store time spent in proc
+        totalTimeMilli+=(disconnectionEndTime-disconnectionStartTime);
+        disconnectTimeMilli+=(disconnectionEndTime-disconnectionStartTime);
     }
 }
