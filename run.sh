@@ -163,6 +163,7 @@ function native_asynch_client_parallel() {
     java -classpath ${CLIENTCLASSPATH} -Dlog4j.configuration=file://${LOG4J} \
         connection_benchmark.ConnectionBenchmark \
         --clientType=NATIVE_ASYNCH_CLIENT_PARALLEL \
+        --numberOfConnections=$1 \
         --numberOfProcCallsPerConnection=$2 \
         --parallelSleepTimeMilli=0
 }
