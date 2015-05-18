@@ -3,6 +3,8 @@ package connection_benchmark;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
+
+import com.sun.javaws.exceptions.InvalidArgumentException;
 import org.voltdb.CLIConfig;
 import org.voltdb.client.Client;
 import org.voltdb.client.ClientConfig;
@@ -43,15 +45,6 @@ class ConnectionBenchmark {
     private final AtomicLong successCalls = new AtomicLong(0);
     private final AtomicLong failedCalls = new AtomicLong(0);
 
-    private enum ClientType {
-        JDBC_CLIENT,
-        JDBC_CLIENT_PARALLEL,
-        NATIVE_SYNCH_CLIENT,
-        NATIVE_SYNCH_CLIENT_PARALLEL,
-        NATIVE_ASYNCH_CLIENT,
-        NATIVE_ASYNCH_CLIENT_PARALLEL
-    }
-
     /**
      * Uses included {@link CLIConfig} class to
      * declaratively state command line options with defaults
@@ -79,7 +72,7 @@ class ConnectionBenchmark {
 
         @Option(desc = "Client type - ONE OF JDBC_CLIENT, JDBC_CLIENT_PARALLEL, NATIVE_SYNCH_CLIENT" +
                 ", NATIVE_SYNCH_CLIENT_PARALLEL, NATIVE_ASYNCH_CLIENT OR  NATIVE_ASYNCH_CLIENT_PARALLEL (see run.sh)")
-        final ClientType clientType = ClientType.NATIVE_ASYNCH_CLIENT;
+        final String clientType = ""; // Note: CLIConfig does not cater for enums, so use string
     }
 
     /**
@@ -259,10 +252,10 @@ class ConnectionBenchmark {
         for (int i=0; i<config.numberOfConnections; i++) {
 
             switch (config.clientType) {
-                case JDBC_CLIENT:
+                case "JDBC_CLIENT":
                     runJdbcIteration(i);
                     break;
-                case JDBC_CLIENT_PARALLEL:
+                case "JDBC_CLIENT_PARALLEL":
 
                     int client_id_hack = i;
 
@@ -289,10 +282,10 @@ class ConnectionBenchmark {
                         }
                     }).start();
                     break;
-                case NATIVE_SYNCH_CLIENT:
+                case "NATIVE_SYNCH_CLIENT":
                     runNativeSynchIteration(i);
                     break;
-                case NATIVE_SYNCH_CLIENT_PARALLEL:
+                case "NATIVE_SYNCH_CLIENT_PARALLEL":
 
                     client_id_hack = i;
 
@@ -318,10 +311,10 @@ class ConnectionBenchmark {
                         }
                     }).start();
                     break;
-                case NATIVE_ASYNCH_CLIENT:
+                case "NATIVE_ASYNCH_CLIENT":
                     runNativeAsynchIteration(i);
                     break;
-                case NATIVE_ASYNCH_CLIENT_PARALLEL:
+                case "NATIVE_ASYNCH_CLIENT_PARALLEL":
 
                     client_id_hack = i;
 
@@ -348,12 +341,15 @@ class ConnectionBenchmark {
                         }
                     }).start();
                     break;
+                default:
+                    String args[] = new String[] {config.clientType};
+                    throw new InvalidArgumentException(args);
             }
         }
 
-        if  (config.clientType.equals(ClientType.NATIVE_ASYNCH_CLIENT_PARALLEL) ||
-                config.clientType.equals(ClientType.JDBC_CLIENT_PARALLEL) ||
-                config.clientType.equals(ClientType.NATIVE_SYNCH_CLIENT_PARALLEL)) {
+        if  (config.clientType.equals("NATIVE_ASYNCH_CLIENT_PARALLEL") ||
+                config.clientType.equals("JDBC_CLIENT_PARALLEL") ||
+                config.clientType.equals("NATIVE_SYNCH_CLIENT_PARALLEL")) {
             connections.await();
         }
 
