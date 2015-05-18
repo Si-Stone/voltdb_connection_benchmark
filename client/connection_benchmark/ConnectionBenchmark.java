@@ -1,6 +1,7 @@
 package connection_benchmark;
 
 import java.util.Arrays;
+import java.util.IllegalFormatCodePointException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -342,8 +343,7 @@ class ConnectionBenchmark {
                     }).start();
                     break;
                 default:
-                    String args[] = new String[] {config.clientType};
-                    throw new InvalidArgumentException(args);
+                    throw new IllegalArgumentException("Client Type is not catered for");
             }
         }
 
