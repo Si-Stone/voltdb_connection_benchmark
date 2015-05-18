@@ -1,13 +1,14 @@
 
 truncate table client_location;
-(Returned 100000 rows in 0.01s)
+(Returned 100000 rows in 0.02s)
 --------------------------------------------------------------------------------
  Command Line Configuration
 --------------------------------------------------------------------------------
 
-clientType = native_synch_client
+clientType = NATIVE_SYNCH_CLIENT
 numberOfConnections = 1
 numberOfProcCallsPerConnection = 100000
+parallelSleepTimeMilli = 5000
 password = 
 server = localhost:21212
 user = 
@@ -22,7 +23,7 @@ user =
  Benchmark Ends
 --------------------------------------------------------------------------------
 
-Total run time (HH:MI:SS) was: 00:00:28
+Total run time (HH:MI:SS) was: 00:00:31
 
 --------------------------------------------------------------------------------
 
@@ -34,9 +35,9 @@ Total number of failures was       : 0
 --------------------------------------------------------------------------------
 
 
-Total comparison time in milliseconds was          : 27664
-Connect comparison time in milliseconds was        : 338
-Procedure call comparison time in milliseconds was : 27323
+Total comparison time in milliseconds was          : 30591
+Connect comparison time in milliseconds was        : 343
+Procedure call comparison time in milliseconds was : 30245
 Disconnect comparison time in milliseconds was     : 3
 
 --------------------------------------------------------------------------------
@@ -63,4 +64,4 @@ C1
 -------
  100000
 
-(Returned 1 rows in 0.03s)
+(Returned 1 rows in 0.02s)

@@ -238,6 +238,8 @@ class ConnectionBenchmark {
 
         long benchmarkStartTime = System.currentTimeMillis();
         
+System.out.printf("config.numberOfConnections value is: %d", config.numberOfConnections);
+
         for (int i=0; i<config.numberOfConnections; i++) {
 
             switch (config.clientType) {

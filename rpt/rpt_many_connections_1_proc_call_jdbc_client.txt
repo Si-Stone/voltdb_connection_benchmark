@@ -1,13 +1,14 @@
 
 truncate table client_location;
-(Returned 100000 rows in 0.04s)
+(Returned 100000 rows in 0.05s)
 --------------------------------------------------------------------------------
  Command Line Configuration
 --------------------------------------------------------------------------------
 
-clientType = jdbc_client
+clientType = JDBC_CLIENT
 numberOfConnections = 100000
 numberOfProcCallsPerConnection = 1
+parallelSleepTimeMilli = 5000
 password = 
 server = localhost:21212
 user = 
@@ -22,7 +23,7 @@ user =
  Benchmark Ends
 --------------------------------------------------------------------------------
 
-Total run time (HH:MI:SS) was: 00:00:30
+Total run time (HH:MI:SS) was: 00:00:29
 
 --------------------------------------------------------------------------------
 
@@ -34,10 +35,10 @@ Total number of failures was       : 0
 --------------------------------------------------------------------------------
 
 
-Total comparison time in milliseconds was          : 29943
-Connect comparison time in milliseconds was        : 2980
-Procedure call comparison time in milliseconds was : 26943
-Disconnect comparison time in milliseconds was     : 20
+Total comparison time in milliseconds was          : 28719
+Connect comparison time in milliseconds was        : 3294
+Procedure call comparison time in milliseconds was : 25400
+Disconnect comparison time in milliseconds was     : 25
 
 --------------------------------------------------------------------------------
 
@@ -50,8 +51,8 @@ Disconnect comparison time per connection in milliseconds was    : 0
 --------------------------------------------------------------------------------
 
 
-Percentage of time spent connecting   :        10
-Percentage of time spent in proc call :        90
+Percentage of time spent connecting   :        11
+Percentage of time spent in proc call :        88
 Percentage of time spent disconnecting:         0
 
 --------------------------------------------------------------------------------

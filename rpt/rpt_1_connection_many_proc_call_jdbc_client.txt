@@ -5,9 +5,10 @@ truncate table client_location;
  Command Line Configuration
 --------------------------------------------------------------------------------
 
-clientType = jdbc_client
+clientType = JDBC_CLIENT
 numberOfConnections = 1
 numberOfProcCallsPerConnection = 100000
+parallelSleepTimeMilli = 5000
 password = 
 server = localhost:21212
 user = 
@@ -34,9 +35,9 @@ Total number of failures was       : 0
 --------------------------------------------------------------------------------
 
 
-Total comparison time in milliseconds was          : 28621
-Connect comparison time in milliseconds was        : 325
-Procedure call comparison time in milliseconds was : 28296
+Total comparison time in milliseconds was          : 29343
+Connect comparison time in milliseconds was        : 370
+Procedure call comparison time in milliseconds was : 28973
 Disconnect comparison time in milliseconds was     : 0
 
 --------------------------------------------------------------------------------
@@ -63,4 +64,4 @@ C1
 -------
  100000
 
-(Returned 1 rows in 0.01s)
+(Returned 1 rows in 0.02s)
