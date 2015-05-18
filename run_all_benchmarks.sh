@@ -14,7 +14,7 @@ date
 
 # first try to get average connection/disconnection overhead as a percentage for each type
 # i.e. just connect, call proc once and disconnect
-number_of_connections=1000
+number_of_connections=100000
 number_of_proc_calls=1
 
 echo
@@ -46,7 +46,7 @@ echo
 # next try to see how things change when connection is held open for many proc calls
 # i.e. connect, call procs many times and disconnect
 number_of_connections=1
-number_of_proc_calls=1000
+number_of_proc_calls=100000
 
 echo
 echo single connection many proc calls starts at `date`
