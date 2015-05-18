@@ -138,7 +138,8 @@ function native_synch_client_parallel() {
         connection_benchmark.ConnectionBenchmark \
         --clientType=NATIVE_SYNCH_CLIENT_PARALLEL \
         --numberOfConnections=$1 \
-        --numberOfProcCallsPerConnection=$2
+        --numberOfProcCallsPerConnection=$2 \
+        --parallelSleepTimeMilli=0
 }
 
 # run the benchmark
@@ -150,7 +151,8 @@ function native_asynch_client() {
         connection_benchmark.ConnectionBenchmark \
         --clientType=NATIVE_ASYNCH_CLIENT \
         --numberOfConnections=$1 \
-        --numberOfProcCallsPerConnection=$2
+        --numberOfProcCallsPerConnection=$2 \
+        --parallelSleepTimeMilli=0
 }
 
 # run the benchmark
@@ -161,8 +163,8 @@ function native_asynch_client_parallel() {
     java -classpath ${CLIENTCLASSPATH} -Dlog4j.configuration=file://${LOG4J} \
         connection_benchmark.ConnectionBenchmark \
         --clientType=NATIVE_ASYNCH_CLIENT_PARALLEL \
-        --numberOfConnections=$1 \
-        --numberOfProcCallsPerConnection=$2
+        --numberOfProcCallsPerConnection=$2 \
+        --parallelSleepTimeMilli=0
 }
 
 # Run the target passed as the first arg on the command line

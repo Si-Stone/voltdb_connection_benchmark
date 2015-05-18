@@ -21,7 +21,7 @@ echo
 echo many connections in serial starts  at `date`
 echo
 echo number of connections is:  ${number_of_connections}
-echo number of proc calls is:   ${number_of_connections}
+echo number of proc calls is:   ${number_of_proc_calls}
 echo
 
 file=rpt_many_connections_1_proc_call_native_synch_client.txt
@@ -52,7 +52,7 @@ echo
 echo single connection many proc calls starts at `date`
 echo
 echo number of connections is:  ${number_of_connections}
-echo number of proc calls is:   ${number_of_connections}
+echo number of proc calls is:   ${number_of_proc_calls}
 echo
 
 file=rpt_1_connection_many_proc_calls_native_synch_client.txt
@@ -85,7 +85,7 @@ echo
 echo many connections in parallel starts at `date`
 echo
 echo number of connections is:  ${number_of_connections}
-echo number of proc calls is:   ${number_of_connections}
+echo number of proc calls is:   ${number_of_proc_calls}
 echo
 
 
